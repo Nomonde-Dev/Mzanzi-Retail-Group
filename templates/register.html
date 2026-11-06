@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create account · Mzanzi Retail Group</title>
+  <style nonce="{{ csp_nonce }}">
+    :root{font-family:"Segoe UI",Arial,sans-serif;color:#203040;background:#eff3f7}
+    *{box-sizing:border-box}
+    body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 16% 18%,#e0efe9 0,transparent 28%),radial-gradient(circle at 88% 85%,#dce9f5 0,transparent 32%),#eff3f7}
+    .layout{width:min(920px,100%);min-height:580px;display:grid;grid-template-columns:1.04fr .96fr;overflow:hidden;border:1px solid #e0e7ef;border-radius:18px;background:#fff;box-shadow:0 24px 70px #18324b1c}
+    .brand{display:flex;flex-direction:column;justify-content:space-between;padding:42px;background:#18324b;color:#fff}
+    .logo{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:700;letter-spacing:.04em}
+    .mark{width:39px;height:39px;display:grid;place-items:center;border:1px solid #ffffff55;border-radius:11px;background:#ffffff14;font-size:19px}
+    .brand-copy h1{max-width:390px;margin:0 0 15px;font-size:37px;line-height:1.12;letter-spacing:-.03em}
+    .brand-copy p{max-width:360px;margin:0;color:#d1dfeb;font-size:15px;line-height:1.7}
+    .tagline{margin:0;color:#b9d1c8;font-size:13px;font-weight:600;letter-spacing:.06em}
+    .form-side{display:flex;align-items:center;padding:42px}
+    form{width:100%}
+    h2{margin:0 0 7px;color:#18324b;font-size:24px}
+    .intro{margin:0 0 21px;color:#64748b;font-size:13px}
+    label{display:block;margin:0 0 7px;color:#334155;font-size:12px;font-weight:650}
+    input[type=email],input[type=password],input[type=text]{width:100%;height:41px;padding:0 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;font:inherit}
+    input:focus{border-color:#2878b5;box-shadow:0 0 0 3px #2878b51c}
+    .field{margin-bottom:13px}
+    .password-wrap{position:relative}
+    .password-wrap input{padding-right:60px}
+    .show-password{position:absolute;top:0;right:5px;height:41px;padding:0 8px;border:0;background:transparent;color:#2878b5;cursor:pointer;font-size:11px;font-weight:650}
+    a{color:#2878b5;text-decoration:none}
+    a:hover{text-decoration:underline}
+    .submit{width:100%;height:44px;border:0;border-radius:6px;background:#18324b;color:#fff;cursor:pointer;font:inherit;font-weight:700}
+    .submit:hover{background:#244660}
+    .alert{margin:0 0 14px;padding:10px 12px;border:1px solid #f1c7c7;border-radius:6px;background:#fff4f4;color:#a52d2d;font-size:12px}
+    .help{margin:15px 0 0;color:#64748b;font-size:11px;line-height:1.6}
+    .footer{margin-top:20px;color:#94a3b8;font-size:11px;text-align:center}
+    @media(max-width:680px){body{padding:12px}.layout{grid-template-columns:1fr;min-height:0}.brand{gap:30px;padding:24px}.brand-copy h1{font-size:29px}.form-side{padding:28px 24px}}
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <section class="brand">
+      <div class="logo"><span class="mark" aria-hidden="true">M</span><span>MZANZI RETAIL GROUP</span></div>
+      <div class="brand-copy">
+        <h1>Smarter Insights.<br>Better Decisions.</h1>
+        <p>Transforming retail data into meaningful business insights. Your business intelligence platform for smarter retail decisions.</p>
+      </div>
+      <p class="tagline">BUSINESS INTELLIGENCE &amp; ANALYTICS</p>
+    </section>
+    <section class="form-side">
+      <form method="post" action="{{ url_for('register') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <h2>Create your account</h2>
+        <p class="intro">Register for Mzanzi Retail Group analytics.</p>
+        {% if error %}<p class="alert" role="alert">{{ error }}</p>{% endif %}
+        <div class="field">
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" autocomplete="name" required minlength="1" maxlength="100" value="{{ name or '' }}">
+        </div>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" value="{{ email or '' }}">
+        </div>
+        <div class="field">
+          <label for="password">Create password</label>
+          <div class="password-wrap">
+            <input id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="1024">
+            <button class="show-password" type="button" aria-controls="password" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="confirm-password">Confirm password</label>
+          <input id="confirm-password" name="confirm_password" type="password" autocomplete="new-password" required minlength="12" maxlength="1024">
+        </div>
+        <button class="submit" type="submit">Create account</button>
+        <p class="help">Passwords must be at least 12 characters. New accounts are Analysts and cannot manage users or delete datasets.</p>
+        <p class="footer">Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
+      </form>
+    </section>
+  </main>
+  <script nonce="{{ csp_nonce }}">
+    const toggle = document.querySelector(".show-password");
+    const password = document.getElementById("password");
+    toggle.addEventListener("click", () => {
+      const showing = password.type === "password";
+      password.type = showing ? "text" : "password";
+      toggle.textContent = showing ? "Hide" : "Show";
+      toggle.setAttribute("aria-label", showing ? "Hide password" : "Show password");
+      toggle.setAttribute("aria-pressed", String(showing));
+    });
+  </script>
+</body>
+</html>

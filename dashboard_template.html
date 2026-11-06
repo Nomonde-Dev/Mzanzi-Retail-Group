@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="__CSRF_TOKEN__">
+  <title>Sales Performance Dashboard</title>
+  <style nonce="__CSP_NONCE__">
+    :root {
+      color-scheme: light;
+      --navy: #18324b;
+      --navy-light: #244660;
+      --blue: #2878b5;
+      --teal: #18a999;
+      --purple: #8067c7;
+      --orange: #e5943a;
+      --ink: #203040;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --surface: #ffffff;
+      --background: #f3f6fa;
+      --positive: #16835d;
+      --negative: #c44444;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--ink);
+      font: 14px/1.5 "Segoe UI", Arial, sans-serif;
+    }
+    button, input, select { font: inherit; }
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 3;
+      display: flex;
+      width: 218px;
+      flex-direction: column;
+      padding: 22px 14px;
+      background: var(--navy);
+      color: #fff;
+    }
+    .brand { padding: 5px 11px 26px; font-size: 15px; font-weight: 700; }
+    .brand small { display: block; margin-top: 3px; color: #b7c9d8; font-size: 11px; font-weight: 400; }
+    .nav-label { padding: 12px 11px 7px; color: #a7bdce; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .sidebar nav { display: grid; gap: 5px; }
+    .sidebar nav a {
+      padding: 9px 11px;
+      border-radius: 6px;
+      color: #e2ebf2;
+      text-decoration: none;
+    }
+    .sidebar nav a:hover, .sidebar nav a:focus { background: var(--navy-light); color: #fff; outline: none; }
+    .side-note { margin: auto 10px 0; color: #b7c9d8; font-size: 11px; }
+    .main { min-width: 0; margin-left: 218px; padding: 0 30px 34px; }
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 23px 0 17px;
+    }
+    .topbar h1 { margin: 0; color: var(--navy); font-size: 25px; letter-spacing: -.025em; }
+    .topbar p { margin: 4px 0 0; color: var(--muted); }
+    .refresh { color: var(--muted); font-size: 11px; text-align: right; white-space: nowrap; }
+    .account-actions { display: flex; align-items: center; gap: 12px; }
+    .logout-form { margin: 0; }
+    .filterbar, .card, .panel, .info-card, .insight, .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface);
+      box-shadow: 0 2px 8px #18324b0a;
+    }
+    .filterbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 11px;
+      margin-bottom: 15px;
+      padding: 13px;
+    }
+    .filterbar label, .upload-label {
+      display: grid;
+      min-width: 115px;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    select, input[type="date"], input[type="search"], input[type="file"] {
+      min-width: 0;
+      padding: 7px 9px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      background: #fff;
+      color: var(--ink);
+    }
+    .filterbar select { width: 145px; }
+    .filterbar input[type="date"] { width: 145px; }
+    .control-button {
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      background: #fff;
+      color: var(--navy);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .control-button:hover { background: #eff6fb; }
+    .cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 11px; margin-bottom: 18px; }
+    .card { position: relative; min-height: 112px; padding: 13px 15px; overflow: hidden; }
+    .card::before { position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--blue); content: ""; }
+    .card:nth-child(2)::before { background: var(--teal); }
+    .card:nth-child(3)::before { background: var(--purple); }
+    .card:nth-child(4)::before { background: var(--orange); }
+    .card:nth-child(5)::before { background: #5d8a64; }
+    .card .label { color: var(--muted); font-size: 11px; font-weight: 600; }
+    .card .value { display: block; margin: 5px 0 2px; color: var(--navy); font-size: clamp(17px, 1.8vw, 23px); font-weight: 700; }
+    .card .comparison { color: var(--muted); font-size: 11px; }
+    .comparison.positive { color: var(--positive); }
+    .comparison.negative { color: var(--negative); }
+    .section { margin-top: 21px; scroll-margin-top: 18px; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+    .section-heading h2 { margin: 0; color: var(--navy); font-size: 17px; }
+    .section-heading p { margin: 0; color: var(--muted); font-size: 11px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .panel { min-width: 0; padding: 14px; }
+    .panel h3 { margin: 0; color: var(--ink); font-size: 14px; }
+    .panel .subtitle { margin: 2px 0 8px; color: var(--muted); font-size: 11px; }
+    .panel canvas { display: block; width: 100%; height: 258px; }
+    .panel canvas.tall { height: 300px; }
+    .wide { grid-column: 1 / -1; }
+    .trend-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .insights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; }
+    .insight { padding: 13px 14px; }
+    .insight .tag { color: var(--blue); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .insight h3 { margin: 4px 0; font-size: 13px; }
+    .insight p { margin: 0; color: var(--muted); font-size: 12px; }
+    .info-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .info-card { padding: 11px 13px; }
+    .info-card span { display: block; color: var(--muted); font-size: 10px; }
+    .info-card strong { display: block; margin-top: 3px; color: var(--navy); font-size: 14px; }
+    .report-tools { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-bottom: 10px; }
+    .report-tools label { display: grid; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 600; }
+    .report-tools input[type="search"] { width: min(300px, 80vw); }
+    .report-tools select { min-width: 155px; }
+    .report-tools .control-button { margin-left: auto; }
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; }
+    th, td { padding: 9px 11px; border-bottom: 1px solid var(--line); text-align: left; }
+    th { position: sticky; top: 0; background: #f8fafc; color: #475569; font-size: 10px; text-transform: uppercase; }
+    th button { padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; text-transform: inherit; }
+    td.numeric, th.numeric { text-align: right; }
+    tbody tr:hover { background: #f8fafc; }
+    .pagination { display: flex; align-items: center; justify-content: flex-end; gap: 9px; padding: 9px 2px; color: var(--muted); font-size: 11px; }
+    .pagination button { padding: 5px 9px; border: 1px solid var(--line); border-radius: 4px; background: white; color: var(--ink); cursor: pointer; }
+    .pagination button:disabled { cursor: default; opacity: .45; }
+    .upload-box { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+    .upload-box .upload-label { min-width: 260px; }
+    .upload-help, .footnote { color: var(--muted); font-size: 11px; }
+    .status { min-height: 18px; color: var(--muted); font-size: 11px; }
+    .status.error { color: var(--negative); }
+    .status.success { color: var(--positive); }
+    .category-table { max-height: 300px; overflow: auto; }
+    .footer { margin-top: 17px; color: var(--muted); font-size: 11px; }
+    @media (max-width: 1100px) {
+      .sidebar { width: 185px; }
+      .main { margin-left: 185px; padding-right: 20px; padding-left: 20px; }
+      .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .sidebar { position: sticky; inset: 0 0 auto; width: auto; padding: 8px 12px; }
+      .brand { display: none; }
+      .nav-label, .side-note { display: none; }
+      .sidebar nav { display: flex; justify-content: space-around; gap: 4px; }
+      .sidebar nav a { padding: 7px 8px; font-size: 12px; }
+      .main { margin-left: 0; padding: 0 14px 25px; }
+      .topbar { padding-top: 17px; }
+      .grid, .trend-grid { grid-template-columns: 1fr; }
+      .wide { grid-column: auto; }
+      .insights { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 500px) {
+      .topbar { display: block; }
+      .topbar h1 { font-size: 21px; }
+      .refresh { margin-top: 5px; text-align: left; }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .card { min-height: 98px; padding: 11px; }
+      .filterbar { gap: 8px; }
+      .filterbar label { flex: 1 1 42%; }
+      .filterbar select, .filterbar input[type="date"] { width: 100%; }
+      .section-heading { display: block; }
+      .section-heading p { margin-top: 3px; }
+      .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .report-tools .control-button { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">MZANZI RETAIL<small>Business Intelligence &amp; Analytics</small></div>
+      <div class="nav-label">Workspace</div>
+      <nav aria-label="Dashboard navigation">
+        <a href="#overview">Overview</a>
+        <a href="#products">Products</a>
+        <a href="#regions">Regions</a>
+        <a href="#reports">Reports</a>
+        <a href="#upload-title">Upload Dataset</a>
+        <a class="server-only" href="/datasets">Manage Datasets</a>
+        __ADMIN_NAV__
+      </nav>
+      <div class="side-note">
+        <p>Currency: South African rand (ZAR)</p>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar" id="overview">
+        <div>
+          <h1>Mzanzi Retail Group · Sales Performance</h1>
+          <p>Business Intelligence &amp; Analytics · Smarter insights. Better decisions.</p>
+        </div>
+        <div class="account-actions">
+          <div class="refresh">Data refreshed<br><strong id="refresh-date">—</strong></div>
+          <div class="refresh server-only">Signed in as<br><strong>__USER_DISPLAY_NAME__ · __USER_ROLE__</strong></div>
+          <form class="logout-form server-only" method="post" action="/logout">
+            <input type="hidden" name="csrf_token" value="__CSRF_TOKEN__">
+            <button class="control-button" type="submit">Sign out</button>
+          </form>
+        </div>
+      </header>
+
+      <section class="filterbar" aria-label="Dashboard filters">
+        <label>Year<select id="year-filter"></select></label>
+        <label>From<input id="start-date" type="date"></label>
+        <label>To<input id="end-date" type="date"></label>
+        <label>Region<select id="region-filter"></select></label>
+        <label>Category<select id="category-filter"></select></label>
+        <label>Product<select id="product-filter"></select></label>
+        <label>Top products by<select id="product-metric">
+          <option value="quantity">Units sold</option>
+          <option value="revenue">Revenue</option>
+          <option value="profit">Profit</option>
+        </select></label>
+        <button class="control-button" id="reset-filters" type="button">Reset filters</button>
+      </section>
+
+      <section class="cards" aria-label="Key performance indicators">
+        <article class="card"><span class="label">Total revenue</span><strong class="value" id="revenue-card">—</strong><span class="comparison" id="revenue-comparison"></span></article>
+        <article class="card"><span class="label">Total profit</span><strong class="value" id="profit-card">—</strong><span class="comparison" id="profit-comparison"></span></article>
+        <article class="card"><span class="label">Profit margin</span><strong class="value" id="margin-card">—</strong><span class="comparison" id="margin-comparison"></span></article>
+        <article class="card"><span class="label">Total orders</span><strong class="value" id="orders-card">—</strong><span class="comparison" id="orders-comparison"></span></article>
+        <article class="card"><span class="label">Units sold</span><strong class="value" id="units-card">—</strong><span class="comparison" id="units-comparison"></span></article>
+      </section>
+
+      <section class="section" aria-labelledby="trends-title">
+        <div class="section-heading"><h2 id="trends-title">Sales trends</h2><p id="period-label">Selected reporting period</p></div>
+        <div class="trend-grid">
+          <article class="panel"><h3>Monthly revenue</h3><p class="subtitle">Revenue by month · hover for values</p><canvas id="revenue-trend" role="img" aria-label="Monthly revenue"></canvas></article>
+          <article class="panel"><h3>Monthly profit</h3><p class="subtitle">Profit by month · scaled separately for clarity</p><canvas id="profit-trend" role="img" aria-label="Monthly profit"></canvas></article>
+        </div>
+      </section>
+
+      <section class="section" id="products" aria-labelledby="products-title">
+        <div class="section-heading"><h2 id="products-title">Product & category performance</h2><p>Rankings respond to the active filters</p></div>
+        <div class="grid">
+          <article class="panel"><h3>Top 10 products</h3><p class="subtitle">Ranked by the selected measure</p><canvas id="product-chart" class="tall" role="img" aria-label="Top products"></canvas></article>
+          <article class="panel"><h3>Revenue by category</h3><p class="subtitle">Category contribution · hover for revenue and share</p><canvas id="category-donut" class="tall" role="img" aria-label="Category revenue share"></canvas></article>
+          <article class="panel wide">
+            <h3>Category revenue breakdown</h3><p class="subtitle">Revenue totals by product category</p>
+            <div class="category-table"><table><thead><tr><th>Category</th><th class="numeric">Revenue</th><th class="numeric">Share</th><th class="numeric">Profit</th><th class="numeric">Margin</th></tr></thead><tbody id="category-rows"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="regions" aria-labelledby="regions-title">
+        <div class="section-heading"><h2 id="regions-title">Regional performance</h2><p>Compare sales, profit and margin across regions</p></div>
+        <div class="grid">
+          <article class="panel wide"><h3>Regional revenue and profit</h3><p class="subtitle">Revenue and profit are independently scaled for comparison · hover for exact values</p><canvas id="region-chart" class="tall" role="img" aria-label="Regional revenue and profit"></canvas></article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="insights-title">
+        <div class="section-heading"><h2 id="insights-title">Business insights</h2><p>Calculated from data matching the current filters</p></div>
+        <div class="insights" id="insights-list"></div>
+      </section>
+
+      <section class="section" id="reports" aria-labelledby="reports-title">
+        <div class="section-heading"><h2 id="reports-title">Transaction report</h2><p>Search, sort, page through and export matching sales records</p></div>
+        <div class="report-tools">
+          <label>Search product or order<input id="transaction-search" type="search" placeholder="Type a product or order ID"></label>
+          <label>Sort by<select id="transaction-sort">
+            <option value="date-desc">Date: newest first</option>
+            <option value="date-asc">Date: oldest first</option>
+            <option value="revenue-desc">Revenue: high to low</option>
+            <option value="revenue-asc">Revenue: low to high</option>
+            <option value="profit-desc">Profit: high to low</option>
+            <option value="profit-asc">Profit: low to high</option>
+          </select></label>
+          <button class="control-button" id="export-transactions" type="button">Export filtered CSV</button>
+          <a class="control-button server-only" href="/reports/sales.xlsx">Download Excel report</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Order</th><th>Product</th><th>Category</th><th>Region</th><th class="numeric">Units</th><th class="numeric">Revenue</th><th class="numeric">Profit</th></tr></thead>
+            <tbody id="transaction-rows"></tbody>
+          </table>
+        </div>
+        <div class="pagination"><span id="page-status"></span><button id="previous-page" type="button">Previous</button><button id="next-page" type="button">Next</button></div>
+      </section>
+
+      <section class="section" aria-labelledby="data-title">
+        <div class="section-heading"><h2 id="data-title">Data & analytics</h2><p>Dataset profile and transaction-level correlations</p></div>
+        <div class="info-grid">
+          <div class="info-card"><span>Records analysed</span><strong id="records-info">—</strong></div>
+          <div class="info-card"><span>Duplicate order IDs</span><strong id="duplicates-info">—</strong></div>
+          <div class="info-card"><span>Missing values</span><strong id="missing-info">—</strong></div>
+          <div class="info-card"><span>Data coverage</span><strong id="coverage-info">—</strong></div>
+        </div>
+        <article class="panel analytics-panel">
+          <h3>Correlation analysis</h3>
+          <p class="subtitle">Pearson correlation across filtered transactions. Correlation describes association, not causation.</p>
+          <div class="category-table"><table><thead><tr><th>Measure pair</th><th class="numeric">Correlation</th><th>Interpretation</th></tr></thead><tbody id="correlation-rows"></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="section" aria-labelledby="upload-title">
+        <div class="section-heading"><h2 id="upload-title">Use another sales CSV</h2><p>Upload a CSV with the same columns as clean_sales.csv</p></div>
+        <article class="panel">
+          <div class="upload-box">
+            <label class="upload-label">Choose sales CSV<input id="csv-upload" type="file" accept=".csv,text/csv"></label>
+            <button class="control-button" id="restore-sample" type="button">Restore supplied data</button>
+          </div>
+          <p class="upload-help">Required columns: order_id, order_date, month, year, region, category, product, quantity, unit_price, discount, unit_cost, revenue, cost, profit. Dates use YYYY-MM-DD. Uploads are validated before they are saved to the active application dataset.</p>
+          <div class="status" id="upload-status" role="status" aria-live="polite"></div>
+        </article>
+      </section>
+      <p class="footer" id="dashboard-footer">Source: supplied sales CSV · Local browser dashboard · No data is sent to a server.</p>
+    </main>
+  </div>
+  <script nonce="__CSP_NONCE__">
+    const sampleSales = __SALES_DATA__;
+    const serverMode = __SERVER_MODE__;
+    const csrfToken = "__CSRF_TOKEN__";
+    if (!serverMode) {
+      document.querySelectorAll(".server-only").forEach(element => { element.hidden = true; });
+      document.getElementById("dashboard-footer").textContent =
+        "Source: supplied sales CSV · Local browser dashboard · No data is sent to a server.";
+    } else {
+      document.getElementById("dashboard-footer").textContent =
+        "Mzanzi Retail Group · Authenticated workspace · Dataset access is controlled by your account.";
+    }
+    let sales = sampleSales;
+    const refreshedAt = "__REFRESHED_AT__";
+    const pageSize = 25;
+    let currentPage = 0;
+    let sortState = { key: "date", direction: "desc" };
+    const requiredColumns = [
+      "order_id", "order_date", "month", "year", "region", "category",
+      "product", "quantity", "unit_price", "discount", "unit_cost",
+      "revenue", "cost", "profit"
+    ];
+    const currency = new Intl.NumberFormat("en-ZA", {
+      style: "currency", currency: "ZAR", maximumFractionDigits: 0
+    });
+    const exactCurrency = new Intl.NumberFormat("en-ZA", {
+      style: "currency", currency: "ZAR", minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+    const number = new Intl.NumberFormat("en-ZA");
+    const colors = ["#2878b5", "#18a999", "#8067c7", "#e5943a", "#5d8a64", "#db6682"];
+    const filters = {
+      year: document.getElementById("year-filter"),
+      start: document.getElementById("start-date"),
+      end: document.getElementById("end-date"),
+      region: document.getElementById("region-filter"),
+      category: document.getElementById("category-filter"),
+      product: document.getElementById("product-filter"),
+      metric: document.getElementById("product-metric")
+    };
+    const reportSearch = document.getElementById("transaction-search");
+    const uploadStatus = document.getElementById("upload-status");
+    const dateOf = row => row.date || row.order_date;
+    const sortedUnique = values => [...new Set(values)].sort((a, b) => String(a).localeCompare(String(b)));
+
+    function setOptions(select, values, allLabel) {
+      select.replaceChildren(new Option(allLabel, "all"));
+      values.forEach(value => select.add(new Option(String(value), String(value))));
+    }
+
+    function setDateLimits() {
+      const dates = sales.map(dateOf).sort();
+      filters.start.min = dates[0] || "";
+      filters.start.max = dates[dates.length - 1] || "";
+      filters.end.min = dates[0] || "";
+      filters.end.max = dates[dates.length - 1] || "";
+    }
+
+    function setDateRange(start, end) {
+      filters.start.value = start;
+      filters.end.value = end;
+    }
+
+    function getYearRange(year) {
+      const dates = sales.map(dateOf).filter(date => date.startsWith(`${year}-`)).sort();
+      return dates.length ? [dates[0], dates[dates.length - 1]] : ["", ""];
+    }
+
+    function populateFilters(defaultLatestYear) {
+      const years = sortedUnique(sales.map(row => row.year)).sort((a, b) => Number(a) - Number(b));
+      setOptions(filters.year, years, "All years");
+      setOptions(filters.region, sortedUnique(sales.map(row => row.region)), "All regions");
+      setOptions(filters.category, sortedUnique(sales.map(row => row.category)), "All categories");
+      setOptions(filters.product, sortedUnique(sales.map(row => row.product)), "All products");
+      setDateLimits();
+      if (defaultLatestYear && years.length) {
+        const latest = String(years[years.length - 1]);
+        filters.year.value = latest;
+        setDateRange(...getYearRange(latest));
+      } else {
+        filters.year.value = "all";
+        const dates = sales.map(dateOf).sort();
+        setDateRange(dates[0] || "", dates[dates.length - 1] || "");
+      }
+    }
+
+    function canvasContext(id) {
+      const canvas = document.getElementById(id);
+      const ratio = window.devicePixelRatio || 1;
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.clearRect(0, 0, width, height);
+      context.font = "11px Segoe UI, Arial, sans-serif";
+      return { context, width, height };
+    }
+
+    function drawEmpty(ctx, width, height) {
+      ctx.fillStyle = "#64748b";
+      ctx.textAlign = "center";
+      ctx.fillText("No data for these filters", width / 2, height / 2);
+    }
+
+    function aggregate(rows, key, metrics) {
+      const groups = new Map();
+      rows.forEach(row => {
+        const label = row[key];
+        if (!groups.has(label)) {
+          groups.set(label, Object.fromEntries(metrics.map(metric => [metric, 0])));
+        }
+        const value = groups.get(label);
+        metrics.forEach(metric => { value[metric] += Number(row[metric]) || 0; });
+      });
+      return groups;
+    }
+
+    function drawTrend(canvasId, rows, metric, color) {
+      const { context: ctx, width, height } = canvasContext(canvasId);
+      const left = 66, right = 18, top = 14, bottom = 38;
+      const plotWidth = width - left - right, plotHeight = height - top - bottom;
+      const monthly = aggregate(rows, "month", [metric]);
+      const values = [...monthly.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+      if (!values.length) return drawEmpty(ctx, width, height);
+      const maximum = Math.max(1, ...values.map(([, value]) => value[metric]));
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.fillStyle = "#64748b";
+      ctx.textAlign = "right";
+      for (let tick = 0; tick <= 4; tick++) {
+        const y = top + plotHeight * tick / 4;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+        ctx.fillText(currency.format(maximum * (1 - tick / 4)), left - 7, y + 4);
+      }
+      ctx.beginPath();
+      values.forEach(([, value], index) => {
+        const x = left + (values.length === 1 ? plotWidth / 2 : plotWidth * index / (values.length - 1));
+        const y = top + plotHeight * (1 - value[metric] / maximum);
+        if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      values.forEach(([, value], index) => {
+        const x = left + (values.length === 1 ? plotWidth / 2 : plotWidth * index / (values.length - 1));
+        const y = top + plotHeight * (1 - value[metric] / maximum);
+        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+      });
+      ctx.fillStyle = "#64748b";
+      ctx.textAlign = "center";
+      const step = Math.max(1, Math.ceil(values.length / 9));
+      values.forEach(([month], index) => {
+        if (index % step === 0 || index === values.length - 1) {
+          const x = left + (values.length === 1 ? plotWidth / 2 : plotWidth * index / (values.length - 1));
+          ctx.fillText(month, x, height - 12);
+        }
+      });
+      document.getElementById(canvasId).title = values
+        .map(([month, value]) => `${month}: ${exactCurrency.format(value[metric])}`)
+        .join("\n");
+    }
+
+    function drawProductBars(rows) {
+      const { context: ctx, width, height } = canvasContext("product-chart");
+      const metric = filters.metric.value;
+      const totals = aggregate(rows, "product", [metric]);
+      const entries = [...totals.entries()]
+        .map(([label, value]) => ({ label, value: value[metric] }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 10);
+      if (!entries.length) return drawEmpty(ctx, width, height);
+      const left = 12, right = 18, top = 10, bottom = 74;
+      const plotWidth = width - left - right, plotHeight = height - top - bottom;
+      const maximum = Math.max(1, ...entries.map(item => item.value));
+      const slot = plotWidth / entries.length;
+      const barWidth = Math.max(5, Math.min(42, slot * .64));
+      const metricLabel = metric === "quantity" ? "units" : metric;
+      const fmt = metric === "quantity" ? number.format : currency.format;
+      entries.forEach((item, index) => {
+        const barHeight = Math.max(1, plotHeight * item.value / maximum);
+        const x = left + slot * index + (slot - barWidth) / 2;
+        const y = top + plotHeight - barHeight;
+        ctx.fillStyle = colors[0];
+        ctx.fillRect(x, y, barWidth, barHeight);
+        ctx.save();
+        ctx.translate(x + barWidth / 2, top + plotHeight + 9);
+        ctx.rotate(-Math.PI / 4);
+        ctx.fillStyle = "#475569";
+        ctx.textAlign = "right";
+        ctx.fillText(item.label.length > 23 ? `${item.label.slice(0, 21)}…` : item.label, 0, 0);
+        ctx.restore();
+      });
+      document.getElementById("product-chart").title =
+        `Top products by ${metricLabel}\n` + entries.map((item, i) => `${i + 1}. ${item.label}: ${fmt(item.value)}`).join("\n");
+    }
+
+    function drawDonut(rows) {
+      const { context: ctx, width, height } = canvasContext("category-donut");
+      const totals = [...aggregate(rows, "category", ["revenue"]).entries()]
+        .map(([label, value]) => ({ label, value: value.revenue }))
+        .sort((a, b) => b.value - a.value);
+      const total = totals.reduce((sum, item) => sum + item.value, 0);
+      if (!total) return drawEmpty(ctx, width, height);
+      const cx = width * .34, cy = height * .48, radius = Math.min(width * .25, height * .37);
+      let angle = -Math.PI / 2;
+      totals.forEach((item, index) => {
+        const nextAngle = angle + Math.PI * 2 * item.value / total;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, angle, nextAngle);
+        ctx.arc(cx, cy, radius * .57, nextAngle, angle, true);
+        ctx.closePath();
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fill();
+        angle = nextAngle;
+      });
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#64748b";
+      ctx.font = "11px Segoe UI, Arial, sans-serif";
+      ctx.fillText("Revenue", cx, cy - 3);
+      ctx.fillStyle = "#18324b";
+      ctx.font = "bold 13px Segoe UI, Arial, sans-serif";
+      ctx.fillText(currency.format(total), cx, cy + 16);
+      const legendX = width * .64;
+      const lineHeight = 27;
+      ctx.font = "11px Segoe UI, Arial, sans-serif";
+      ctx.textAlign = "left";
+      totals.forEach((item, index) => {
+        const y = cy - ((totals.length - 1) * lineHeight) / 2 + index * lineHeight;
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fillRect(legendX, y - 9, 9, 9);
+        ctx.fillStyle = "#334155";
+        ctx.fillText(`${item.label} · ${(item.value / total * 100).toFixed(1)}%`, legendX + 15, y);
+      });
+      document.getElementById("category-donut").title =
+        totals.map(item => `${item.label}: ${exactCurrency.format(item.value)} (${(item.value / total * 100).toFixed(1)}%)`).join("\n");
+    }
+
+    function drawRegionChart(rows) {
+      const { context: ctx, width, height } = canvasContext("region-chart");
+      const totals = [...aggregate(rows, "region", ["revenue", "profit"]).entries()]
+        .map(([label, value]) => ({ label, ...value }))
+        .sort((a, b) => b.revenue - a.revenue);
+      if (!totals.length) return drawEmpty(ctx, width, height);
+      const left = 115, right = 18, top = 14, bottom = 38;
+      const plotWidth = width - left - right, plotHeight = height - top - bottom;
+      const slot = plotHeight / totals.length;
+      const maxRevenue = Math.max(1, ...totals.map(item => item.revenue));
+      const maxProfit = Math.max(1, ...totals.map(item => item.profit));
+      totals.forEach((item, index) => {
+        const center = top + index * slot + slot / 2;
+        const barHeight = Math.min(16, slot * .29);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#475569";
+        ctx.fillText(item.label, left - 9, center + 4);
+        ctx.fillStyle = "#e6edf3";
+        ctx.fillRect(left, center - barHeight - 2, plotWidth, barHeight);
+        ctx.fillStyle = colors[0];
+        ctx.fillRect(left, center - barHeight - 2, plotWidth * item.revenue / maxRevenue, barHeight);
+        ctx.fillStyle = "#e6edf3";
+        ctx.fillRect(left, center + 2, plotWidth, barHeight);
+        ctx.fillStyle = colors[1];
+        ctx.fillRect(left, center + 2, plotWidth * item.profit / maxProfit, barHeight);
+      });
+      ctx.textAlign = "left";
+      ctx.fillStyle = colors[0]; ctx.fillRect(left, height - 11, 9, 9);
+      ctx.fillStyle = "#475569"; ctx.fillText("Revenue (scaled)", left + 14, height - 3);
+      ctx.fillStyle = colors[1]; ctx.fillRect(left + 125, height - 11, 9, 9);
+      ctx.fillStyle = "#475569"; ctx.fillText("Profit (scaled)", left + 139, height - 3);
+      document.getElementById("region-chart").title =
+        totals.map(item => `${item.label}: revenue ${exactCurrency.format(item.revenue)}, profit ${exactCurrency.format(item.profit)}, margin ${item.revenue ? (item.profit / item.revenue * 100).toFixed(1) : 0}%`).join("\n");
+    }
+
+    function getFilteredRows(ignoreYear = false) {
+      return sales.filter(row => {
+        const date = dateOf(row);
+        return (ignoreYear || filters.year.value === "all" || String(row.year) === filters.year.value) &&
+          (!filters.start.value || date >= filters.start.value) &&
+          (!filters.end.value || date <= filters.end.value) &&
+          (filters.region.value === "all" || row.region === filters.region.value) &&
+          (filters.category.value === "all" || row.category === filters.category.value) &&
+          (filters.product.value === "all" || row.product === filters.product.value);
+      });
+    }
+
+    function percentageChange(current, previous) {
+      if (!previous) return null;
+      return (current - previous) / Math.abs(previous) * 100;
+    }
+
+    function setComparison(id, current, previous, mode = "percent") {
+      const element = document.getElementById(id);
+      element.className = "comparison";
+      if (!previous || !Number.isFinite(previous)) {
+        element.textContent = "No prior-year comparison available";
+        return;
+      }
+      let change;
+      if (mode === "points") {
+        change = current - previous;
+        element.textContent = `${change >= 0 ? "+" : ""}${change.toFixed(1)} pp vs prior year`;
+      } else {
+        change = percentageChange(current, previous);
+        if (change === null) {
+          element.textContent = "No prior-year comparison available";
+          return;
+        }
+        element.textContent = `${change >= 0 ? "+" : ""}${change.toFixed(1)}% vs prior year`;
+      }
+      element.classList.add(change >= 0 ? "positive" : "negative");
+    }
+
+    function updateSummary(rows) {
+      const revenue = rows.reduce((sum, row) => sum + row.revenue, 0);
+      const profit = rows.reduce((sum, row) => sum + row.profit, 0);
+      const orders = new Set(rows.map(row => row.order_id)).size;
+      const units = rows.reduce((sum, row) => sum + row.quantity, 0);
+      const margin = revenue ? profit / revenue * 100 : 0;
+      document.getElementById("revenue-card").textContent = currency.format(revenue);
+      document.getElementById("profit-card").textContent = currency.format(profit);
+      document.getElementById("margin-card").textContent = `${margin.toFixed(1)}%`;
+      document.getElementById("orders-card").textContent = number.format(orders);
+      document.getElementById("units-card").textContent = number.format(units);
+
+      const previousRows = filters.start.value && filters.end.value
+        ? sales.filter(row => {
+          const priorDate = dateOf(row);
+          const priorStart = shiftYear(filters.start.value, -1);
+          const priorEnd = shiftYear(filters.end.value, -1);
+          return priorDate >= priorStart && priorDate <= priorEnd &&
+            (filters.region.value === "all" || row.region === filters.region.value) &&
+            (filters.category.value === "all" || row.category === filters.category.value) &&
+            (filters.product.value === "all" || row.product === filters.product.value);
+        })
+        : [];
+      const previousRevenue = previousRows.reduce((sum, row) => sum + row.revenue, 0);
+      const previousProfit = previousRows.reduce((sum, row) => sum + row.profit, 0);
+      const previousOrders = new Set(previousRows.map(row => row.order_id)).size;
+      const previousUnits = previousRows.reduce((sum, row) => sum + row.quantity, 0);
+      const previousMargin = previousRevenue ? previousProfit / previousRevenue * 100 : 0;
+      setComparison("revenue-comparison", revenue, previousRevenue);
+      setComparison("profit-comparison", profit, previousProfit);
+      setComparison("margin-comparison", margin, previousRevenue ? previousMargin : 0, "points");
+      setComparison("orders-comparison", orders, previousOrders);
+      setComparison("units-comparison", units, previousUnits);
+
+      const starts = rows.map(dateOf).sort();
+      document.getElementById("period-label").textContent = starts.length
+        ? `Reporting period: ${starts[0]} to ${starts[starts.length - 1]} · ${number.format(rows.length)} records`
+        : "No records for the selected reporting period";
+    }
+
+    function updateCategoryTable(rows) {
+      const totals = [...aggregate(rows, "category", ["revenue", "profit"]).entries()]
+        .map(([category, value]) => ({ category, ...value }))
+        .sort((a, b) => b.revenue - a.revenue);
+      const revenueTotal = totals.reduce((sum, item) => sum + item.revenue, 0);
+      document.getElementById("category-rows").innerHTML = totals.map(item =>
+        `<tr><td>${escapeHtml(item.category)}</td><td class="numeric">${exactCurrency.format(item.revenue)}</td>` +
+        `<td class="numeric">${revenueTotal ? (item.revenue / revenueTotal * 100).toFixed(1) : "0.0"}%</td>` +
+        `<td class="numeric">${exactCurrency.format(item.profit)}</td>` +
+        `<td class="numeric">${item.revenue ? (item.profit / item.revenue * 100).toFixed(1) : "0.0"}%</td></tr>`
+      ).join("") || '<tr><td colspan="5">No data for these filters.</td></tr>';
+    }
+
+    function updateInsights(rows) {
+      const revenueByCategory = [...aggregate(rows, "category", ["revenue"]).entries()]
+        .map(([label, value]) => ({ label, revenue: value.revenue }))
+        .sort((a, b) => b.revenue - a.revenue);
+      const profitByRegion = [...aggregate(rows, "region", ["revenue", "profit"]).entries()]
+        .map(([label, value]) => ({ label, ...value }))
+        .sort((a, b) => b.profit - a.profit);
+      const products = [...aggregate(rows, "product", ["quantity", "revenue", "profit"]).entries()]
+        .map(([label, value]) => ({ label, ...value }))
+        .sort((a, b) => b.quantity - a.quantity);
+      const monthly = [...aggregate(rows, "month", ["revenue"]).entries()].sort((a, b) => a[0].localeCompare(b[0]));
+      const insightItems = [];
+
+      if (monthly.length > 1) {
+        const first = monthly[0][1].revenue;
+        const last = monthly[monthly.length - 1][1].revenue;
+        const change = percentageChange(last, first);
+        insightItems.push({
+          tag: "Period trend",
+          title: change === null ? "Revenue movement" : `Revenue ${change >= 0 ? "increased" : "decreased"} ${Math.abs(change).toFixed(1)}%`,
+          body: `${exactCurrency.format(last)} in ${monthly[monthly.length - 1][0]} versus ${exactCurrency.format(first)} in ${monthly[0][0]}.`
+        });
+      } else {
+        insightItems.push({ tag: "Period trend", title: "Not enough monthly history", body: "Choose a wider reporting period to compare monthly revenue." });
+      }
+      if (revenueByCategory.length) {
+        const leader = revenueByCategory[0];
+        insightItems.push({
+          tag: "Category leader",
+          title: `${leader.label} leads revenue`,
+          body: `${exactCurrency.format(leader.revenue)} (${rows.length ? (leader.revenue / rows.reduce((sum, row) => sum + row.revenue, 0) * 100).toFixed(1) : 0}% of selected revenue).`
+        });
+      }
+      if (profitByRegion.length) {
+        const leader = profitByRegion[0];
+        insightItems.push({
+          tag: "Regional profit",
+          title: `${leader.label} contributes most profit`,
+          body: `${exactCurrency.format(leader.profit)} profit at a ${leader.revenue ? (leader.profit / leader.revenue * 100).toFixed(1) : 0}% margin.`
+        });
+      }
+      if (products.length) {
+        const highestUnits = products[0];
+        const lowMargin = products.filter(item => item.revenue > 0)
+          .map(item => ({ ...item, margin: item.profit / item.revenue }))
+          .sort((a, b) => a.margin - b.margin)[0];
+        if (lowMargin) {
+          insightItems.push({
+            tag: "Product watch",
+            title: `${lowMargin.label} has the lowest margin`,
+            body: `${(lowMargin.margin * 100).toFixed(1)}% margin on ${number.format(lowMargin.quantity)} units; top unit seller is ${highestUnits.label}.`
+          });
+        }
+      }
+      document.getElementById("insights-list").innerHTML = insightItems.map(item =>
+        `<article class="insight"><span class="tag">${escapeHtml(item.tag)}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.body)}</p></article>`
+      ).join("") || '<article class="insight"><p>No data for these filters.</p></article>';
+    }
+
+    function pearson(rows, xKey, yKey) {
+      if (rows.length < 2) return null;
+      const xs = rows.map(row => Number(row[xKey]));
+      const ys = rows.map(row => Number(row[yKey]));
+      const xMean = xs.reduce((sum, value) => sum + value, 0) / xs.length;
+      const yMean = ys.reduce((sum, value) => sum + value, 0) / ys.length;
+      let numerator = 0, xVariance = 0, yVariance = 0;
+      xs.forEach((x, index) => {
+        const dx = x - xMean, dy = ys[index] - yMean;
+        numerator += dx * dy;
+        xVariance += dx * dx;
+        yVariance += dy * dy;
+      });
+      const denominator = Math.sqrt(xVariance * yVariance);
+      return denominator ? numerator / denominator : null;
+    }
+
+    function updateAnalytics(rows) {
+      document.getElementById("records-info").textContent = number.format(rows.length);
+      const orderIds = rows.map(row => row.order_id);
+      document.getElementById("duplicates-info").textContent = number.format(orderIds.length - new Set(orderIds).size);
+      const missing = rows.reduce((count, row) =>
+        count + requiredColumns.filter(column => row[column] === null || row[column] === undefined || row[column] === "").length, 0);
+      document.getElementById("missing-info").textContent = number.format(missing);
+      const dates = rows.map(dateOf).sort();
+      document.getElementById("coverage-info").textContent = dates.length ? `${dates[0]} – ${dates[dates.length - 1]}` : "No records";
+      const pairs = [
+        ["Quantity ↔ revenue", "quantity", "revenue"],
+        ["Discount ↔ profit", "discount", "profit"],
+        ["Revenue ↔ profit", "revenue", "profit"]
+      ];
+      document.getElementById("correlation-rows").innerHTML = pairs.map(([label, x, y]) => {
+        const value = pearson(rows, x, y);
+        const strength = value === null ? "Not enough variation/data" :
+          `${Math.abs(value) < .1 ? "Negligible" : Math.abs(value) < .4 ? "Weak" : Math.abs(value) < .7 ? "Moderate" : "Strong"} ${value < 0 ? "negative" : "positive"} association`;
+        return `<tr><td>${label}</td><td class="numeric">${value === null ? "—" : value.toFixed(3)}</td><td>${strength}</td></tr>`;
+      }).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[char]));
+    }
+
+    function filteredTransactions() {
+      const query = reportSearch.value.trim().toLowerCase();
+      const rows = getFilteredRows().filter(row =>
+        !query || row.product.toLowerCase().includes(query) || row.order_id.toLowerCase().includes(query)
+      );
+      const date = (a, b) => dateOf(a).localeCompare(dateOf(b));
+      const comparators = {
+        date: date,
+        revenue: (a, b) => a.revenue - b.revenue,
+        profit: (a, b) => a.profit - b.profit
+      };
+      return rows.sort((a, b) => {
+        const comparison = comparators[sortState.key](a, b);
+        return (sortState.direction === "asc" ? comparison : -comparison) || date(b, a);
+      });
+    }
+
+    function updateTransactions() {
+      const rows = filteredTransactions();
+      const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+      currentPage = Math.min(currentPage, pageCount - 1);
+      const pageRows = rows.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+      document.getElementById("transaction-rows").innerHTML = pageRows.map(row =>
+        `<tr><td>${escapeHtml(dateOf(row))}</td><td>${escapeHtml(row.order_id)}</td>` +
+        `<td>${escapeHtml(row.product)}</td><td>${escapeHtml(row.category)}</td>` +
+        `<td>${escapeHtml(row.region)}</td><td class="numeric">${number.format(row.quantity)}</td>` +
+        `<td class="numeric">${exactCurrency.format(row.revenue)}</td><td class="numeric">${exactCurrency.format(row.profit)}</td></tr>`
+      ).join("") || '<tr><td colspan="8">No transactions match the current filters.</td></tr>';
+      const first = rows.length ? currentPage * pageSize + 1 : 0;
+      const last = Math.min((currentPage + 1) * pageSize, rows.length);
+      document.getElementById("page-status").textContent = `Showing ${number.format(first)}–${number.format(last)} of ${number.format(rows.length)}`;
+      document.getElementById("previous-page").disabled = currentPage === 0;
+      document.getElementById("next-page").disabled = currentPage >= pageCount - 1;
+    }
+
+    function render() {
+      if (filters.start.value && filters.end.value && filters.start.value > filters.end.value) {
+        filters.end.setCustomValidity("End date must be on or after the start date.");
+        filters.end.reportValidity();
+        return;
+      }
+      filters.end.setCustomValidity("");
+      const rows = getFilteredRows();
+      updateSummary(rows);
+      drawTrend("revenue-trend", rows, "revenue", colors[0]);
+      drawTrend("profit-trend", rows, "profit", colors[1]);
+      drawProductBars(rows);
+      drawDonut(rows);
+      drawRegionChart(rows);
+      updateCategoryTable(rows);
+      updateInsights(rows);
+      updateAnalytics(rows);
+      updateTransactions();
+    }
+
+    function shiftYear(date, delta) {
+      const [year, month, day] = date.split("-").map(Number);
+      const targetYear = year + delta;
+      const finalDay = new Date(Date.UTC(targetYear, month, 0)).getUTCDate();
+      return `${targetYear}-${String(month).padStart(2, "0")}-${String(Math.min(day, finalDay)).padStart(2, "0")}`;
+    }
+
+    function csvCell(value) {
+      let text = String(value ?? "");
+      if (typeof value === "string" && /^[\t\r ]*[=+\-@]/.test(text)) text = `'${text}`;
+      return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    }
+
+    function parseCsv(text) {
+      const records = [];
+      let row = [], field = "", quoted = false;
+      for (let index = 0; index < text.length; index++) {
+        const char = text[index];
+        if (quoted) {
+          if (char === '"' && text[index + 1] === '"') { field += '"'; index++; }
+          else if (char === '"') quoted = false;
+          else field += char;
+        } else if (char === '"' && field === "") quoted = true;
+        else if (char === ",") { row.push(field); field = ""; }
+        else if (char === "\n" || char === "\r") {
+          if (char === "\r" && text[index + 1] === "\n") index++;
+          row.push(field); field = "";
+          if (row.some(value => value.trim() !== "")) records.push(row);
+          row = [];
+        } else field += char;
+      }
+      if (quoted) throw new Error("CSV contains an unclosed quoted field.");
+      if (field !== "" || row.length) {
+        row.push(field);
+        if (row.some(value => value.trim() !== "")) records.push(row);
+      }
+      if (records.length < 2) throw new Error("CSV needs a header row and at least one data row.");
+      const headers = records[0].map(value => value.trim().replace(/^\uFEFF/, ""));
+      if (new Set(headers).size !== headers.length) throw new Error("CSV has duplicate column names.");
+      const missingHeaders = requiredColumns.filter(column => !headers.includes(column));
+      if (missingHeaders.length) throw new Error(`Missing required columns: ${missingHeaders.join(", ")}.`);
+      const positions = Object.fromEntries(requiredColumns.map(column => [column, headers.indexOf(column)]));
+      const numericColumns = ["year", "quantity", "unit_price", "discount", "unit_cost", "revenue", "cost", "profit"];
+      const ids = new Set();
+      const parsed = records.slice(1).map((cells, rowIndex) => {
+        if (cells.length !== headers.length) throw new Error(`Row ${rowIndex + 2} has ${cells.length} values; expected ${headers.length}.`);
+        const item = Object.fromEntries(requiredColumns.map(column => [column, cells[positions[column]].trim()]));
+        for (const column of requiredColumns) {
+          if (!item[column]) throw new Error(`Row ${rowIndex + 2} is missing ${column}.`);
+        }
+        for (const column of numericColumns) {
+          const value = Number(item[column]);
+          if (!Number.isFinite(value)) throw new Error(`Row ${rowIndex + 2} has an invalid ${column}.`);
+          item[column] = value;
+        }
+        item.year = Number(item.year);
+        item.quantity = Number(item.quantity);
+        if (!Number.isInteger(item.year) || !Number.isInteger(item.quantity) || item.quantity <= 0) {
+          throw new Error(`Row ${rowIndex + 2} must have an integer year and a positive whole-number quantity.`);
+        }
+        if (item.discount < 0 || item.discount > 1) throw new Error(`Row ${rowIndex + 2} has a discount outside 0–1.`);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(item.order_date) || !validDate(item.order_date)) {
+          throw new Error(`Row ${rowIndex + 2} has an invalid date; use YYYY-MM-DD.`);
+        }
+        if (item.year !== Number(item.order_date.slice(0, 4)) || item.month !== item.order_date.slice(0, 7)) {
+          throw new Error(`Row ${rowIndex + 2} has a month/year inconsistent with its order_date.`);
+        }
+        if (ids.has(item.order_id)) throw new Error(`Duplicate order_id "${item.order_id}" found on row ${rowIndex + 2}.`);
+        ids.add(item.order_id);
+        const expectedRevenue = item.quantity * item.unit_price * (1 - item.discount);
+        const expectedCost = item.quantity * item.unit_cost;
+        if (Math.abs(item.revenue - expectedRevenue) > .02 || Math.abs(item.cost - expectedCost) > .02 ||
+            Math.abs(item.profit - (item.revenue - item.cost)) > .02) {
+          throw new Error(`Row ${rowIndex + 2} has inconsistent revenue, cost, or profit calculations.`);
+        }
+        item.date = item.order_date;
+        return item;
+      });
+      return parsed;
+    }
+
+    function validDate(value) {
+      const date = new Date(`${value}T00:00:00Z`);
+      return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+    }
+
+    function exportTransactions() {
+      const rows = filteredTransactions();
+      const columns = ["order_date", "order_id", "product", "category", "region", "quantity", "revenue", "profit"];
+      const csv = [columns.join(","), ...rows.map(row => columns.map(column => csvCell(row[column])).join(","))].join("\r\n");
+      downloadFile(csv, "sales_transactions.csv", "text/csv;charset=utf-8");
+    }
+
+    function downloadFile(content, filename, mimeType) {
+      const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function bindEvents() {
+      filters.year.addEventListener("change", () => {
+        if (filters.year.value === "all") {
+          const dates = sales.map(dateOf).sort();
+          setDateRange(dates[0] || "", dates[dates.length - 1] || "");
+        } else {
+          setDateRange(...getYearRange(filters.year.value));
+        }
+        currentPage = 0;
+        render();
+      });
+      [filters.start, filters.end, filters.region, filters.category, filters.product, filters.metric]
+        .forEach(control => control.addEventListener("change", () => { currentPage = 0; render(); }));
+      reportSearch.addEventListener("input", () => { currentPage = 0; updateTransactions(); });
+      document.getElementById("transaction-sort").addEventListener("change", event => {
+        const [key, direction] = event.target.value.split("-");
+        sortState = { key, direction };
+        currentPage = 0;
+        updateTransactions();
+      });
+      document.getElementById("previous-page").addEventListener("click", () => {
+        currentPage = Math.max(0, currentPage - 1);
+        updateTransactions();
+      });
+      document.getElementById("next-page").addEventListener("click", () => {
+        currentPage++;
+        updateTransactions();
+      });
+      document.getElementById("reset-filters").addEventListener("click", () => {
+        populateFilters(true);
+        reportSearch.value = "";
+        document.getElementById("transaction-sort").value = "date-desc";
+        sortState = { key: "date", direction: "desc" };
+        currentPage = 0;
+        render();
+      });
+      document.getElementById("export-transactions").addEventListener("click", exportTransactions);
+      document.getElementById("restore-sample").addEventListener("click", () => {
+        if (serverMode) {
+          fetch("/api/datasets/sample/select", {
+            method: "POST",
+            headers: { "X-CSRF-Token": csrfToken }
+          }).then(response => {
+            if (!response.ok) throw new Error("Could not restore the supplied dataset.");
+            window.location.reload();
+          }).catch(error => {
+            uploadStatus.className = "status error";
+            uploadStatus.textContent = error.message;
+          });
+          return;
+        }
+        sales = sampleSales;
+        populateFilters(true);
+        document.getElementById("refresh-date").textContent = new Date(refreshedAt).toLocaleString();
+        uploadStatus.className = "status success";
+        uploadStatus.textContent = "Restored the supplied sample dataset.";
+        currentPage = 0;
+        render();
+      });
+      document.getElementById("csv-upload").addEventListener("change", async event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        uploadStatus.className = "status";
+        uploadStatus.textContent = "Validating CSV…";
+        try {
+          if (serverMode) {
+            const form = new FormData();
+            form.append("file", file);
+            const response = await fetch("/api/datasets", {
+              method: "POST",
+              headers: { "X-CSRF-Token": csrfToken },
+              body: form
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "The server rejected this CSV.");
+            window.location.assign("/dashboard");
+            return;
+          }
+          const imported = parseCsv(await file.text());
+          if (!imported.length) throw new Error("The CSV contains no sales records.");
+          sales = imported;
+          populateFilters(true);
+          document.getElementById("refresh-date").textContent = new Date().toLocaleString();
+          currentPage = 0;
+          reportSearch.value = "";
+          render();
+          uploadStatus.className = "status success";
+          uploadStatus.textContent = `Loaded and validated ${number.format(imported.length)} records from ${file.name}.`;
+        } catch (error) {
+          uploadStatus.className = "status error";
+          uploadStatus.textContent = `Upload failed: ${error.message}`;
+        } finally {
+          event.target.value = "";
+        }
+      });
+    }
+
+    document.getElementById("refresh-date").textContent = new Date(refreshedAt).toLocaleString();
+    populateFilters(true);
+    bindEvents();
+    render();
+    window.addEventListener("resize", render);
+  </script>
+</body>
+</html>

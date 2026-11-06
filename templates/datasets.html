@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Datasets · Mzanzi Retail Group</title>
+  <style nonce="{{ csp_nonce }}">
+    *{box-sizing:border-box}body{margin:0;background:#f3f6fa;color:#203040;font:14px/1.5 "Segoe UI",Arial,sans-serif}header{padding:17px 24px;background:#18324b;color:#fff}header strong{font-size:15px}main{max-width:1000px;margin:24px auto;padding:0 18px}a{color:#2878b5;text-decoration:none}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.top h1{margin:0;color:#18324b;font-size:23px}.muted{color:#64748b;font-size:11px}.panel{margin-top:16px;padding:17px;border:1px solid #e2e8f0;border-radius:9px;background:#fff}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}th{background:#f8fafc;color:#64748b;font-size:10px;text-transform:uppercase}button{min-height:32px;padding:6px 10px;border:0;border-radius:5px;background:#18324b;color:#fff;cursor:pointer;font-weight:600}.danger{background:#a53a3a}.inline{display:inline-block;margin-right:5px}.active{color:#16835d;font-weight:700}.alert{padding:9px 11px;border-radius:5px;background:#fff1f1;color:#a52d2d}.success{padding:9px 11px;border-radius:5px;background:#eef9f4;color:#24674d}
+  </style>
+</head>
+<body>
+  <header><strong>MZANZI RETAIL GROUP</strong> · Business Intelligence &amp; Analytics</header>
+  <main>
+    <div class="top"><h1>Sales datasets</h1><a href="{{ url_for('dashboard') }}">← Back to dashboard</a></div>
+    <p class="muted">Select a dataset for your dashboard and reports. Only administrators can permanently delete datasets.</p>
+    {% if error %}<p class="alert" role="alert">{{ error }}</p>{% endif %}
+    {% if notice %}<p class="success" role="status">{{ notice }}</p>{% endif %}
+    <section class="panel">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dataset</th><th>Records</th><th>Uploaded</th><th>Uploaded by</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+          {% for dataset in datasets %}
+            <tr>
+              <td>{{ dataset["name"] }}</td><td>{{ dataset["record_count"] }}</td>
+              <td>{{ dataset["created_at"] }}</td><td>{{ dataset["creator"] or "System" }}</td>
+              <td>{% if dataset["id"] == active_id %}<span class="active">In use</span>{% else %}Available{% endif %}</td>
+              <td>
+                {% if dataset["id"] != active_id %}
+                <form class="inline" method="post" action="{{ url_for('select_dataset', dataset_id=dataset['id']) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Use dataset</button>
+                </form>
+                {% endif %}
+                {% if current_user["role"] == "admin" and not dataset["is_sample"] %}
+                <form class="inline" method="post" action="{{ url_for('delete_dataset', dataset_id=dataset['id']) }}" data-confirm="Permanently delete this dataset and its records?">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="danger" type="submit">Delete</button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6">No datasets are available.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script nonce="{{ csp_nonce }}">
+    document.querySelectorAll("form[data-confirm]").forEach(form => {
+      form.addEventListener("submit", event => {
+        if (!confirm(form.dataset.confirm)) event.preventDefault();
+      });
+    });
+  </script>
+</body>
+</html>
